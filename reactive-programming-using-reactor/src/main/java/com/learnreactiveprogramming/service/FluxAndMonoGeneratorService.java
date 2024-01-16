@@ -33,6 +33,10 @@ public class FluxAndMonoGeneratorService {
                 ;
     }
 
+
+
+
+
     public Flux<String> nameMonoFlatMapMany(){
         return Mono.just("alex")
                 .map(String::toUpperCase)
@@ -51,8 +55,68 @@ public class FluxAndMonoGeneratorService {
                 .fromIterable(List.of("Phan", "Huy", "Hoang"))
                 .transform(filterMap)
                 .flatMap(this::splitStringDelay)
+                .defaultIfEmpty("default")
                 .log()
                 ;
+    }
+
+    public Flux<String> namesFluxTransformDefault(int stringLength) {
+
+        UnaryOperator<Flux<String>> filterMap = name -> name.map(String::toUpperCase)
+                .filter(s -> s.length() > stringLength)
+                .flatMap(this::splitStringDelay);
+
+        var defaultFlux = Flux
+                .just("default")
+                .transform(filterMap);
+
+        return Flux
+                .fromIterable(List.of("Phan", "Huy", "Hoang"))
+                .transform(filterMap)
+                .switchIfEmpty(defaultFlux)
+                .log()
+                ;
+    }
+
+    public Flux<String> namesFluxZip() {
+
+        /* sequence*/
+        var aArray =  Flux.just("A", "B").delayElements(Duration.ofMillis(900));
+        var bArray =  Flux.just("E", "C").delayElements(Duration.ofMillis(90));
+
+        return Flux.zip(aArray, bArray).map(t2 -> t2.getT1() + t2.getT2() )
+                .log()
+                ;
+    }
+    public Flux<String> namesFluxConcat() {
+        /*sequence*/
+
+        var aArray =  Flux.just("A", "B").delayElements(Duration.ofMillis(100));
+        var bArray =  Flux.just("A", "C").delayElements(Duration.ofMillis(90));
+
+        return Flux.concat(aArray, bArray)
+                .log()
+                ;
+    }
+
+
+    public Flux<String> namesFluxMerge() {
+        /*no sequence*/
+        var aArray =  Flux.just("A", "B").delayElements(Duration.ofMillis(900));
+        var bArray =  Flux.just("E", "C").delayElements(Duration.ofMillis(90));
+
+        return Flux.merge(aArray, bArray)
+                .log()
+                ;
+    }
+
+    public Flux<String> namesMonoMerge() {
+        /*no sequence*/
+        var aArray =  Mono.just("A").delayElement(Duration.ofMillis(100));
+        var bArray =  Mono.just("B");
+
+        return aArray.concatWith(bArray)
+                .log();
     }
 
 
@@ -102,7 +166,7 @@ public class FluxAndMonoGeneratorService {
 
     public Flux<String> splitStringDelay(String name){
         var charArray = name.split("");
-        var randomTime =  900;//new Random().nextInt(1000);
+        var randomTime =  new Random().nextInt(1000);
         return Flux.fromArray(charArray)
                 .delayElements(Duration.ofMillis(randomTime))
                 ;
