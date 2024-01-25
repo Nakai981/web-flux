@@ -29,7 +29,10 @@ public class MovieInfoController {
 
     @GetMapping("/movieinfos")
     @ResponseStatus(HttpStatus.OK)
-    public Flux<MovieInfo> findAllMovieInfo(){
+    public Flux<MovieInfo> findAllMovieInfo(@RequestParam(required = false, name = "name") String name){
+        if (!name.isBlank()){
+            return movieInfoServices.findByName(name).log();
+        }
         return movieInfoServices.findAll().log();
     }
 
@@ -57,5 +60,7 @@ public class MovieInfoController {
     ){
          movieInfoServices.deleteMovieInfo( id);
     }
+
+
 
 }

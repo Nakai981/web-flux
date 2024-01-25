@@ -26,7 +26,7 @@ class MovieInfoRepositoryTest {
         var movieInfos = List.of(
                 new MovieInfo(null, "Nguyen Thanh Nhac", 2005, List.of("Year 2011"), LocalDate.parse("2005-06-12")),
                 new MovieInfo(null, "Phan Ha Anh", 1997, List.of("Year 2011", "Case 01"), LocalDate.parse("2021-04-03")),
-                new MovieInfo(null, "Ly Hao Nhien", 1988, List.of("Year 2015"), LocalDate.parse("2015-07-02")),
+                new MovieInfo(null, "Phan Ha Anh", 1988, List.of("Year 2015"), LocalDate.parse("2015-07-02")),
                 new MovieInfo("okoko", "Le Bao Binh", 1987, List.of("KAKA 01"), LocalDate.parse("2001-10-22"))
         );
         movieInfoRepository.saveAll(movieInfos).blockLast();
@@ -100,6 +100,15 @@ class MovieInfoRepositoryTest {
 
         StepVerifier.create(movieInfos)
                 .expectNextCount(3)
+                .verifyComplete();
+    }
+
+    @Test
+    void findByName(){
+        var moviesMono = movieInfoRepository.findByName("Phan Ha Anh");
+
+        StepVerifier.create(moviesMono)
+                .expectNextCount(2)
                 .verifyComplete();
     }
 }

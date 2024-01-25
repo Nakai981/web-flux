@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
@@ -36,7 +37,7 @@ class MovieInfoControllerTest {
         var movieInfos = List.of(
                 new MovieInfo(null, "Nguyen Thanh Nhac", 2005, List.of("Year 2011"), LocalDate.parse("2005-06-12")),
                 new MovieInfo(null, "Phan Ha Anh", 1997, List.of("Year 2011", "Case 01"), LocalDate.parse("2021-04-03")),
-                new MovieInfo(null, "Ly Hao Nhien", 1988, List.of("Year 2015"), LocalDate.parse("2015-07-02")),
+                new MovieInfo(null, "Phan Ha Anh", 1988, List.of("Year 2015"), LocalDate.parse("2015-07-02")),
                 new MovieInfo("okoko", "Le Bao Binh", 1987, List.of("KAKA 01"), LocalDate.parse("2001-10-22"))
         );
         movieInfoRepository.saveAll(movieInfos).blockLast();
@@ -129,6 +130,36 @@ class MovieInfoControllerTest {
                 .expectStatus()
                 .isNotFound();
 
+    }
+
+    @Test
+    void findByMovieInfoId_NotFound_Same() {
+
+        webTestClient.get()
+                .uri(MOVIE_INFO_URL+"/9")
+                .exchange()
+                .expectStatus()
+                .isNotFound()
+                .expectBody()
+                .isEmpty();
+        ;
+
+    }
+
+    @Test
+    void findAllMovieInfo_Name() {
+
+        var uri = UriComponentsBuilder.fromUriString(MOVIE_INFO_URL)
+                        .queryParam("name", "Phan Ha Anh")
+                                .buildAndExpand().toUri();
+
+        webTestClient.get()
+                .uri(uri)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBodyList(MovieInfo.class)
+                .hasSize(2);
     }
 
 }
