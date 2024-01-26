@@ -30,7 +30,7 @@ public class MovieInfoController {
     @GetMapping("/movieinfos")
     @ResponseStatus(HttpStatus.OK)
     public Flux<MovieInfo> findAllMovieInfo(@RequestParam(required = false, name = "name") String name){
-        if (!name.isBlank()){
+        if (name != null){
             return movieInfoServices.findByName(name).log();
         }
         return movieInfoServices.findAll().log();

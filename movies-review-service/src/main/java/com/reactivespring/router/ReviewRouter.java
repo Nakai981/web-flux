@@ -14,10 +14,17 @@ public class ReviewRouter {
 
     @Bean
     public RouterFunction<ServerResponse> reviewsRoute(ReviewHandler reviewHandler){
+
+        String routerFindByID = "/{id}";
+
         return route()
+                /*nest group api*/
                 .nest(path("/v1/reviews"), builder -> {
                     builder
                     .POST("", reviewHandler::addReview)
+                    .PUT(routerFindByID, reviewHandler::updateReview)
+                    .GET(routerFindByID, reviewHandler::findByReviewId)
+                    .DELETE(routerFindByID, reviewHandler::deleteReview)
                     .GET("", reviewHandler::findAll);
                 })
                 .GET("/v1/hello", (request -> ServerResponse.ok().bodyValue("hello")))

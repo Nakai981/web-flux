@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class ReviewsIntgTest {
         var reviewList = List.of(
                 new Review(null, 1L, "Doraemon Movie 1", 9.0),
                 new Review(null, 1L, "Doraemon Movie 2", 2.5),
-                new Review(null, 2L, "KOKO Movie", 10.0)
+                new Review("hello", 2L, "KOKO Movie", 10.0)
         );
         reviewMongoRepository.saveAll(reviewList).blockLast();
     }
@@ -58,6 +59,68 @@ public class ReviewsIntgTest {
                     assert savedReview != null;
                     assert savedReview.getReviewId() != null;
                 });
+    }
 
+    @Test
+    void findAllReview(){
+
+        webTestClient
+                .get()
+                .uri(REVIEWS_URL)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBodyList(Review.class)
+                .hasSize(3);
+    }
+
+    @Test
+    void putReview(){
+
+        /*
+        *  new Review("hello", 2L, "KOKO Movie", 10.0)
+        *  pattern
+        * */
+        var review = new Review("hello", 1L, "Doraemon Movie 5", 9.0);
+        var reviewId = "hello";
+        webTestClient
+                .put()
+                .uri(REVIEWS_URL + "/" + reviewId)
+                .bodyValue(review)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody(Review.class)
+                .consumeWith(reviewEntityExchangeResult -> {
+                    var updatedReview = reviewEntityExchangeResult.getResponseBody();
+                    assert updatedReview != null;
+                    assert updatedReview.getRating() == 9.0;
+                });
+    }
+
+    @Test
+    void deleteReview(){
+        var reviewId = "hello";
+        webTestClient
+                .delete()
+                .uri(REVIEWS_URL + "/" + reviewId)
+                .exchange()
+                .expectStatus()
+                .isNoContent();
+    }
+
+    @Test
+    void findAllReview_MovieInfo(){
+        var uri = UriComponentsBuilder.fromUriString(REVIEWS_URL)
+                .queryParam("movieInfoId", 1)
+                .buildAndExpand().toUri();
+        webTestClient
+                .get()
+                .uri(uri)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBodyList(Review.class)
+                .hasSize(2);
     }
 }
